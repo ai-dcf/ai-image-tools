@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Minimize2, Crop, Square, Type, LayoutGrid } from "lucide-react";
+import { useImageStore } from "@/store/useImageStore";
 
 const tools = [
   {
@@ -55,6 +56,14 @@ const itemVariants = {
 };
 
 export default function Home() {
+  const router = useRouter();
+  const reset = useImageStore((state) => state.reset);
+  
+  const handleToolClick = (href: string) => {
+    reset();
+    router.push(href);
+  };
+  
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-white selection:bg-black selection:text-white">
       <div className="mx-auto max-w-7xl px-6 pb-24 pt-20 sm:pt-32">
@@ -84,9 +93,9 @@ export default function Home() {
         >
           {tools.map((tool, idx) => (
             <motion.div key={tool.href} variants={itemVariants}>
-              <Link
-                href={tool.href}
-                className="group flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 py-10 transition-colors hover:bg-zinc-50"
+              <button
+                onClick={() => handleToolClick(tool.href)}
+                className="group flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 py-10 transition-colors hover:bg-zinc-50 w-full text-left"
               >
                 <div className="flex items-start gap-8 sm:w-2/3">
                   <div className="text-sm font-mono text-zinc-400 pt-1 shrink-0">
@@ -106,7 +115,7 @@ export default function Home() {
                     <ArrowRight className="h-6 w-6" />
                   </div>
                 </div>
-              </Link>
+              </button>
             </motion.div>
           ))}
         </motion.div>
