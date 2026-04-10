@@ -69,28 +69,14 @@ export default function Home() {
 
         {/* Tools List Section */}
         <motion.div 
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-            }
-          }}
-          initial="hidden"
-          animate="visible"
           className="mt-32 border-t border-zinc-200"
         >
           {tools.map((tool, idx) => (
             <motion.div 
-              key={tool.href} 
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: { type: "spring", stiffness: 100, damping: 20 }
-                }
-              }}>
+              key={tool.href}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}>
               <button
                 onClick={() => handleToolClick(tool.href)}
                 className="group flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 py-10 transition-colors hover:bg-zinc-50 w-full text-left"
