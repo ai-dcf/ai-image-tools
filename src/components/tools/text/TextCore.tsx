@@ -141,7 +141,7 @@ export default function TextCore() {
   const selectedText = texts.find(t => t.id === selectedId);
 
   const preview = (
-    <div className="flex h-full w-full items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden relative">
+    <div className="flex h-full w-full items-center justify-center overflow-hidden relative">
       {!originalImage ? (
         <div className="text-center">
           <Upload className="mx-auto h-12 w-12 text-gray-400" />

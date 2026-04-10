@@ -104,11 +104,11 @@ export function CompressorCore() {
   const preview = (
     <div className="flex h-full w-full flex-col items-center justify-center">
       {!originalImage ? (
-        <div className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-12 text-center hover:border-blue-500 transition-colors">
-          <Upload className="mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-semibold">上传图片以压缩</h3>
-          <p className="mb-4 text-sm text-gray-500">支持 JPG, PNG, WebP 等格式</p>
-          <Label htmlFor="upload-image" className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+        <div className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white p-12 text-center hover:border-zinc-900 transition-colors">
+          <Upload className="mb-4 h-12 w-12 text-zinc-300" />
+          <h3 className="mb-2 text-lg font-semibold text-zinc-900">上传图片以压缩</h3>
+          <p className="mb-4 text-sm text-zinc-500">支持 JPG, PNG, WebP 等格式</p>
+          <Label htmlFor="upload-image" className="cursor-pointer rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors">
             选择文件
           </Label>
           <input

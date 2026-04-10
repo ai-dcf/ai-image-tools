@@ -1,6 +1,10 @@
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export function Header() {
+  const pathname = usePathname();
   const links = [
     { name: '首页', href: '/' },
     { name: '图片压缩', href: '/tools/compress' },
@@ -11,26 +15,38 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto flex h-14 items-center px-4">
-        <div className="flex w-full overflow-x-auto">
-          <Link href="/" className="mr-6 flex shrink-0 items-center space-x-2">
-            <span className="font-bold sm:inline-block">
-              图片工具箱
-            </span>
-          </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            {links.map((link) => (
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-zinc-100/50">
+      <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-6">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-5 h-5 bg-black rounded-sm group-hover:rotate-12 transition-transform duration-300" />
+          <span className="font-bold tracking-tight text-[15px] text-black">
+            图片工具箱
+          </span>
+        </Link>
+        <nav className="hidden md:flex items-center space-x-1">
+          {links.map((link) => {
+            const isActive = pathname === link.href;
+            return (
               <Link
                 key={link.name}
                 href={link.href}
-                className="transition-colors hover:text-gray-900 text-gray-600"
+                className={cn(
+                  "relative px-3 py-1.5 text-[13px] font-medium transition-colors",
+                  isActive ? "text-black" : "text-zinc-500 hover:text-black"
+                )}
               >
+                {isActive && (
+                  <motion.div
+                    layoutId="header-active-tab"
+                    className="absolute inset-0 bg-zinc-100 rounded-md -z-10"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
                 {link.name}
               </Link>
-            ))}
-          </nav>
-        </div>
+            );
+          })}
+        </nav>
       </div>
     </header>
   );

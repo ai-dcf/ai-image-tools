@@ -78,7 +78,7 @@ export function CropCore() {
   };
 
   const preview = (
-    <div className="relative w-full h-full flex flex-col items-center justify-center bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300">
+    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
       {imageSrc ? (
         <div className="absolute inset-0">
           <Cropper

@@ -158,9 +158,9 @@ export function CollageCore() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] w-full flex-col md:flex-row bg-gray-50">
+    <div className="flex h-[calc(100vh-3.5rem)] w-full flex-col md:flex-row bg-zinc-50/50">
       {/* Left: Templates (20%) */}
-      <div className="w-full md:w-[20%] border-r bg-white p-4 overflow-y-auto shrink-0 flex flex-col">
+      <div className="w-full md:w-[20%] bg-white border-r border-zinc-100 p-6 overflow-y-auto shrink-0 flex flex-col">
         <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
           <LayoutTemplate className="w-5 h-5 text-blue-500" />
           模板选择
@@ -235,7 +235,7 @@ export function CollageCore() {
       </div>
 
       {/* Center: Preview (55%) */}
-      <div className="flex w-full md:w-[55%] flex-col items-center justify-center p-8 overflow-auto shrink-0 relative bg-gray-100/50">
+      <div className="flex w-full md:w-[55%] flex-col items-center justify-center p-8 overflow-auto shrink-0 relative bg-zinc-50/50">
         {images.length > 0 ? (
           <div className="w-full max-w-2xl h-full flex items-center justify-center">
             <CollageCanvas images={images} preset={preset} settings={settings} />
@@ -263,7 +263,7 @@ export function CollageCore() {
       </div>
 
       {/* Right: Config (25%) */}
-      <div className="w-full md:w-[25%] border-l bg-white p-4 overflow-y-auto shadow-sm shrink-0">
+      <div className="w-full md:w-[25%] bg-white border-l border-zinc-100 p-6 overflow-y-auto shadow-sm shrink-0">
         <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
           <Settings className="w-5 h-5 text-gray-700" />
           配置项

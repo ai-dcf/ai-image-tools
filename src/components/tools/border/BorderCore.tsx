@@ -109,7 +109,7 @@ export function BorderCore() {
   const preview = (
     <div 
       ref={previewContainerRef}
-      className="relative w-full h-full flex flex-col items-center justify-center bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300"
+      className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
     >
       {originalImage && containerSize.width > 0 ? (
         <BorderCanvas

@@ -1,119 +1,127 @@
+"use client";
+
 import Link from "next/link";
-import { 
-  Minimize2, 
-  Crop, 
-  Square, 
-  Type, 
-  LayoutGrid,
-  ArrowRight
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Minimize2, Crop, Square, Type, LayoutGrid } from "lucide-react";
 
 const tools = [
   {
     name: "图片压缩",
-    description: "减小图片文件大小，同时保持高质量。",
+    description: "极致压缩比，保持画质无损。支持 WebP、JPG 等多格式导出。",
     href: "/tools/compress",
     icon: Minimize2,
-    color: "text-blue-500",
-    bgColor: "bg-blue-50",
   },
   {
     name: "图片裁剪",
-    description: "裁剪图片到完美尺寸，支持多种比例。",
+    description: "自由比例控制，提供小红书、微信等全平台主流预设。",
     href: "/tools/crop",
     icon: Crop,
-    color: "text-green-500",
-    bgColor: "bg-green-50",
   },
   {
     name: "添加边框",
-    description: "为您的图片添加自定义边框和装饰。",
+    description: "拍立得、极简细线、电影感。用留白为图片赋予高级质感。",
     href: "/tools/border",
     icon: Square,
-    color: "text-purple-500",
-    bgColor: "bg-purple-50",
   },
   {
     name: "添加文字",
-    description: "在图片上添加个性化文字和排版。",
+    description: "自定义排版、阴影、背景色块。快速制作金句海报与水印。",
     href: "/tools/text",
     icon: Type,
-    color: "text-orange-500",
-    bgColor: "bg-orange-50",
   },
   {
     name: "拼图制作",
-    description: "将多张图片组合成精美的拼图。",
+    description: "九宫格、对比图、留白排版。支持自由拖拽与极简样式控制。",
     href: "/tools/collage",
     icon: LayoutGrid,
-    color: "text-pink-500",
-    bgColor: "bg-pink-50",
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 100, damping: 20 }
+  }
+};
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {/* Hero Section */}
-      <section className="px-6 pt-24 pb-16 text-center lg:pt-32 lg:pb-24">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
-            简单而强大的<span className="text-blue-600">在线图片工具</span>
+    <div className="min-h-[calc(100vh-3.5rem)] bg-white selection:bg-black selection:text-white">
+      <div className="mx-auto max-w-7xl px-6 pb-24 pt-20 sm:pt-32">
+        {/* Hero Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-3xl"
+        >
+          <h1 className="text-[3.5rem] leading-[1.1] tracking-tighter text-black sm:text-[5rem] font-bold">
+            纯净、私密、极速。<br />
+            <span className="text-zinc-400">您的本地图片处理工作流。</span>
           </h1>
-          <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-            无需下载安装，在浏览器中即可完成图片的压缩、裁剪、边框添加等操作。快速、安全且完全免费。
+          <p className="mt-8 max-w-xl text-lg text-zinc-600 leading-relaxed font-medium">
+            无需上传服务器。基于纯前端技术构建的高级图片工具箱，
+            为您提供所见即所得的极简处理体验。
           </p>
-        </div>
-      </section>
+        </motion.div>
 
-      {/* Grid Section */}
-      <section className="px-6 pb-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {tools.map((tool) => (
+        {/* Tools List Section */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-32 border-t border-zinc-200"
+        >
+          {tools.map((tool, idx) => (
+            <motion.div key={tool.href} variants={itemVariants}>
               <Link
-                key={tool.href}
                 href={tool.href}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white p-8 transition-all hover:shadow-lg hover:shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:shadow-none"
+                className="group flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 py-10 transition-colors hover:bg-zinc-50"
               >
-                <div className={`mb-6 flex h-12 w-12 items-center justify-center rounded-xl ${tool.bgColor} transition-colors group-hover:scale-110`}>
-                  <tool.icon className={`h-6 w-6 ${tool.color}`} />
+                <div className="flex items-start gap-8 sm:w-2/3">
+                  <div className="text-sm font-mono text-zinc-400 pt-1 shrink-0">
+                    0{idx + 1}
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold tracking-tight text-black group-hover:translate-x-2 transition-transform duration-300">
+                      {tool.name}
+                    </h2>
+                    <p className="mt-4 text-zinc-500 text-base max-w-md group-hover:text-zinc-900 transition-colors">
+                      {tool.description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-                  {tool.name}
-                </h3>
-                <p className="mt-3 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  {tool.description}
-                </p>
-                <div className="mt-8 flex items-center text-sm font-semibold text-blue-600 dark:text-blue-400">
-                  立即使用
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <div className="mt-8 sm:mt-0 sm:w-1/3 flex justify-end">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-white opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+                    <ArrowRight className="h-6 w-6" />
+                  </div>
                 </div>
               </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+            </motion.div>
+          ))}
+        </motion.div>
 
-      {/* Footer / Features */}
-      <section className="border-t border-zinc-200 bg-white py-12 dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 text-center">
-            <div>
-              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">100% 隐私</div>
-              <p className="mt-2 text-sm text-zinc-500">所有处理都在本地完成，您的图片永不上传服务器。</p>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">极速处理</div>
-              <p className="mt-2 text-sm text-zinc-500">基于现代浏览器技术，即刻获得处理结果。</p>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">完全免费</div>
-              <p className="mt-2 text-sm text-zinc-500">所有功能均可免费使用，无水印，无限制。</p>
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* Footer info */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1 }}
+          className="mt-32 flex flex-col sm:flex-row items-center justify-between text-sm text-zinc-400 font-mono"
+        >
+          <p>100% 本地处理 · 无隐私泄露风险</p>
+          <p>IMAGE TOOLS © {new Date().getFullYear()}</p>
+        </motion.div>
+      </div>
     </div>
   );
 }
