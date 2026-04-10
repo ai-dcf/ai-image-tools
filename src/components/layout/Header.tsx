@@ -2,12 +2,12 @@ import Link from 'next/link';
 
 export function Header() {
   const links = [
-    { name: 'Home', href: '/' },
-    { name: 'Compress', href: '/compress' },
-    { name: 'Crop', href: '/crop' },
-    { name: 'Border', href: '/border' },
-    { name: 'Text', href: '/text' },
-    { name: 'Collage', href: '/collage' },
+    { name: '首页', href: '/' },
+    { name: '图片压缩', href: '/tools/compress' },
+    { name: '图片裁剪', href: '/tools/crop' },
+    { name: '添加边框', href: '/tools/border' },
+    { name: '添加文字', href: '/tools/text' },
+    { name: '拼图制作', href: '/tools/collage' },
   ];
 
   return (
@@ -16,7 +16,7 @@ export function Header() {
         <div className="flex w-full overflow-x-auto">
           <Link href="/" className="mr-6 flex shrink-0 items-center space-x-2">
             <span className="font-bold sm:inline-block">
-              Toolbox
+              图片工具箱
             </span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
