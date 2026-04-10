@@ -450,14 +450,12 @@ export default function TextCore() {
         </div>
       )}
 
-      {originalImage && (
-        <div className="pt-6 border-t mt-auto">
-          <Button className="w-full" size="lg" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
-            导出图片
-          </Button>
-        </div>
-      )}
+      <div className="pt-6 border-t mt-auto">
+        <Button className="w-full" size="lg" onClick={handleExport} disabled={!originalImage}>
+          <Download className="w-4 h-4 mr-2" />
+          导出图片
+        </Button>
+      </div>
     </div>
   );
 

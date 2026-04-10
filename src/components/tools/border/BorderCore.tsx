@@ -154,8 +154,7 @@ export function BorderCore() {
         </Button>
       </div>
 
-      {originalImage && (
-        <>
+      <div className={!originalImage ? "opacity-50 pointer-events-none select-none transition-opacity" : "transition-opacity"}>
           <div className="space-y-4">
             <Label>预设风格</Label>
             <div className="grid grid-cols-2 gap-2">
@@ -306,13 +305,12 @@ export function BorderCore() {
           </div>
 
           <div className="pt-6 border-t">
-            <Button onClick={handleExport} className="w-full" size="lg">
+            <Button onClick={handleExport} className="w-full" size="lg" disabled={!originalImage}>
               <Download className="mr-2 h-5 w-5" />
               导出图片
             </Button>
           </div>
-        </>
-      )}
+      </div>
     </div>
   );
 

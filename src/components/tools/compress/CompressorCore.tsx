@@ -216,7 +216,7 @@ export function CompressorCore() {
         <p className="text-sm text-gray-500">通过预设或自定义设置优化您的图片大小</p>
       </div>
 
-      <div className="space-y-4">
+      <div className={!originalImage ? "space-y-4 opacity-50 pointer-events-none select-none transition-opacity" : "space-y-4 transition-opacity"}>
         <div className="space-y-2">
           <Label className="text-sm font-medium">预设方案</Label>
           <Tabs value={activeTab} onValueChange={applyPreset} className="w-full">

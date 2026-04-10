@@ -392,28 +392,27 @@ export function CollageCore() {
             </div>
           </div>
 
-          {images.length > 0 && (
-            <div className="pt-4 border-t">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm text-gray-500">已就绪，随时可导出</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8"
-                  onClick={() => {
-                    setImages([]);
-                    setFiles([]);
-                  }}
-                >
-                  清空全部
-                </Button>
-              </div>
-              <Button className="w-full py-6 text-base font-medium shadow-sm" onClick={handleDownload}>
-                <Download className="w-5 h-5 mr-2" />
-                导出拼图
+          <div className={`pt-4 border-t ${images.length === 0 ? "opacity-50 pointer-events-none" : ""}`}>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-sm text-gray-500">已就绪，随时可导出</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8"
+                onClick={() => {
+                  setImages([]);
+                  setFiles([]);
+                }}
+                disabled={images.length === 0}
+              >
+                清空全部
               </Button>
             </div>
-          )}
+            <Button className="w-full py-6 text-base font-medium shadow-sm" onClick={handleDownload} disabled={images.length === 0}>
+              <Download className="w-5 h-5 mr-2" />
+              导出拼图
+            </Button>
+          </div>
         </div>
       </div>
     </div>
