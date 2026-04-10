@@ -22,9 +22,11 @@ export function CropCore() {
   const [zoom, setZoom] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [aspect, setAspect] = useState<number | undefined>(undefined)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels)
   }, [])
