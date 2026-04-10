@@ -9,13 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import getCroppedImg from "@/lib/cropImage";
 import { Upload, Download, Image as ImageIcon, RotateCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const PRESETS = [
-  { name: "自由 (Free)", value: undefined },
-  { name: "朋友圈/头像 (1:1)", value: 1 / 1 },
-  { name: "小红书 (3:4)", value: 3 / 4 },
-  { name: "微信公众号首图 (2.35:1)", value: 2.35 / 1 },
-  { name: "抖音 (9:16)", value: 9 / 16 },
+  { id: "free", name: "自由", value: undefined },
+  { id: "1:1", name: "朋友圈/头像", value: 1 / 1 },
+  { id: "3:4", name: "小红书", value: 3 / 4 },
+  { id: "2.35:1", name: "微信公众号", value: 2.35 / 1 },
+  { id: "9:16", name: "抖音", value: 9 / 16 },
 ];
 
 export function CropCore() {
@@ -24,14 +25,13 @@ export function CropCore() {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [aspect, setAspect] = useState<number | undefined>(undefined);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
   const [flip, setFlip] = useState({ horizontal: false, vertical: false });
   const [outputWidth, setOutputWidth] = useState<string>("");
   const [outputHeight, setOutputHeight] = useState<string>("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCropComplete = useCallback(
     (croppedArea: any, croppedAreaPixels: any) => {
       setCroppedAreaPixels(croppedAreaPixels);
@@ -47,6 +47,14 @@ export function CropCore() {
         setImageSrc(reader.result?.toString() || null);
       });
       reader.readAsDataURL(file);
+    }
+  };
+
+  const applyPreset = (presetId: string) => {
+    const preset = PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      setActivePreset(presetId);
+      setAspect(preset.value);
     }
   };
 
@@ -77,6 +85,64 @@ export function CropCore() {
     }
   };
 
+  const presets = (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900">图片裁剪</h2>
+        <p className="text-sm text-gray-500 mt-1">选择裁剪比例预设</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">裁剪比例</Label>
+        <div className="space-y-2">
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              onClick={() => applyPreset(preset.id)}
+              className={cn(
+                "w-full text-left px-4 py-3 rounded-lg border transition-all",
+                activePreset === preset.id
+                  ? "bg-zinc-900 text-white border-zinc-900"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
+              )}
+            >
+              <div className="font-medium">{preset.name}</div>
+              <div className="text-xs mt-1 opacity-70">
+                {preset.id}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t">
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full"
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          上传图片
+        </Button>
+        {imageSrc && (
+          <Button
+            variant="outline"
+            className="w-full mt-2"
+            onClick={() => setImageSrc(null)}
+          >
+            重新上传
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   const preview = (
     <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
       {imageSrc ? (
@@ -98,66 +164,23 @@ export function CropCore() {
         <div className="text-center p-6">
           <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">暂无图片</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            请在右侧控制面板上传需要裁剪的图片
+          <p className="text-sm text-gray-500">
+            请在左侧上传需要裁剪的图片
           </p>
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            variant="outline"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            选择图片
-          </Button>
         </div>
       )}
     </div>
   );
 
-  const config = (
-    <div className="space-y-6">
+  const settings = (
+    <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold mb-4">图片裁剪</h2>
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-        />
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full mb-4"
-          variant={imageSrc ? "outline" : "default"}
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          {imageSrc ? "重新上传图片" : "上传图片"}
-        </Button>
+        <h3 className="text-lg font-semibold text-gray-900">高级设置</h3>
+        <p className="text-sm text-gray-500 mt-1">自定义裁剪参数</p>
       </div>
 
-      <div
-        className={
-          !imageSrc
-            ? "opacity-50 pointer-events-none select-none transition-opacity"
-            : "transition-opacity"
-        }
-      >
+      <div className={!imageSrc ? "space-y-4 opacity-50 pointer-events-none select-none transition-opacity" : "space-y-4 transition-opacity"}>
         <div className="space-y-4">
-          <Label>裁剪比例</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {PRESETS.map((preset, idx) => (
-              <Button
-                key={idx}
-                variant={aspect === preset.value ? "default" : "outline"}
-                onClick={() => setAspect(preset.value)}
-                className="w-full text-xs"
-              >
-                {preset.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4 pt-4 border-t">
           <div className="flex justify-between">
             <Label>缩放</Label>
             <span className="text-xs text-gray-500">{zoom.toFixed(1)}x</span>
@@ -200,9 +223,7 @@ export function CropCore() {
         </div>
 
         <div className="space-y-4 pt-4 border-t">
-          <div className="flex justify-between">
-            <Label>翻转</Label>
-          </div>
+          <Label>翻转</Label>
           <div className="flex gap-4">
             <Button
               variant={flip.horizontal ? "default" : "outline"}
@@ -243,21 +264,20 @@ export function CropCore() {
             />
           </div>
         </div>
+      </div>
 
-        <div className="pt-6 border-t">
-          <Button
-            onClick={handleExport}
-            className="w-full"
-            size="lg"
-            disabled={!imageSrc}
-          >
-            <Download className="mr-2 h-5 w-5" />
-            导出裁剪图片
-          </Button>
-        </div>
+      <div className="mt-auto pt-4 border-t">
+        <Button
+          onClick={handleExport}
+          className="w-full"
+          disabled={!imageSrc}
+        >
+          <Download className="mr-2 h-4 w-4" />
+          导出裁剪图片
+        </Button>
       </div>
     </div>
   );
 
-  return <ToolLayout preview={preview} config={config} />;
+  return <ToolLayout presets={presets} preview={preview} settings={settings} />;
 }

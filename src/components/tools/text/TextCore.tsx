@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { ToolLayout } from '@/components/layout/ToolLayout';
+import { cn } from '@/lib/utils';
 
 const DynamicTextCanvas = dynamic(() => import('./TextCanvas'), {
   ssr: false,
@@ -80,7 +81,6 @@ export default function TextCore() {
   const { originalImage, setOriginalImage, setProcessedImage } = useImageStore();
   const [texts, setTexts] = useState<TextItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stageRef = useRef<any>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +93,6 @@ export default function TextCore() {
 
   const addText = (preset?: any) => {
     const newText: TextItem = {
-      // eslint-disable-next-line react-hooks/purity
       id: `text-${Math.random().toString(36).substr(2, 9)}`,
       text: preset?.text || '双击编辑文字',
       x: preset?.x !== undefined ? preset.x : 50,
@@ -123,7 +122,6 @@ export default function TextCore() {
 
   const handleExport = useCallback(() => {
     if (stageRef.current) {
-      // Temporarily deselect so transformer isn't visible
       setSelectedId(null);
       setTimeout(() => {
         const uri = stageRef.current.toDataURL({ pixelRatio: 2 });
@@ -140,19 +138,81 @@ export default function TextCore() {
 
   const selectedText = texts.find(t => t.id === selectedId);
 
+  const presets = (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900">添加文字</h2>
+        <p className="text-sm text-gray-500 mt-1">选择预设或添加新文字</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">预设方案</Label>
+        <div className="space-y-2">
+          {PRESETS.map(preset => (
+            <button
+              key={preset.id}
+              onClick={() => addText(preset.config)}
+              disabled={!originalImage}
+              className={cn(
+                "w-full text-left px-4 py-3 rounded-lg border transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
+              )}
+            >
+              <div className="font-medium">{preset.name}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t">
+        <Button 
+          className="w-full" 
+          onClick={() => addText()} 
+          disabled={!originalImage}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          添加自定义文字
+        </Button>
+      </div>
+
+      <div className="pt-4 border-t">
+        <input
+          type="file"
+          accept="image/*"
+          id="upload-text-image"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+        <Label htmlFor="upload-text-image" className="cursor-pointer">
+          <Button className="w-full">
+            <Upload className="mr-2 h-4 w-4" />
+            上传图片
+          </Button>
+        </Label>
+        {originalImage && (
+          <Button
+            variant="outline"
+            className="w-full mt-2"
+            onClick={() => {
+              setOriginalImage(null);
+              setTexts([]);
+              setSelectedId(null);
+            }}
+          >
+            重新上传
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   const preview = (
     <div className="flex h-full w-full items-center justify-center overflow-hidden relative">
       {!originalImage ? (
         <div className="text-center">
           <Upload className="mx-auto h-12 w-12 text-gray-400" />
-          <div className="mt-4 flex text-sm leading-6 text-gray-600">
-            <label className="relative cursor-pointer rounded-md bg-white font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80">
-              <span>上传图片</span>
-              <input type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} />
-            </label>
-            <p className="pl-1">或拖拽图片到这里</p>
-          </div>
-          <p className="text-xs leading-5 text-gray-500">PNG, JPG, GIF 最大 10MB</p>
+          <h3 className="text-lg font-medium text-gray-900 mt-4">暂无图片</h3>
+          <p className="text-sm text-gray-500 mt-2">请在左侧上传图片</p>
         </div>
       ) : (
         <>
@@ -168,7 +228,11 @@ export default function TextCore() {
             variant="secondary" 
             size="sm" 
             className="absolute top-4 right-4 z-10 shadow-md"
-            onClick={() => setOriginalImage(null)}
+            onClick={() => {
+              setOriginalImage(null);
+              setTexts([]);
+              setSelectedId(null);
+            }}
           >
             重新上传
           </Button>
@@ -177,43 +241,19 @@ export default function TextCore() {
     </div>
   );
 
-  const config = (
-    <div className="flex flex-col space-y-6">
+  const settings = (
+    <div className="flex flex-col gap-6">
       <div>
-        <h3 className="text-lg font-medium">添加文字</h3>
-        <p className="text-sm text-gray-500 mb-4">选择预设或添加新文字块</p>
-        
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {PRESETS.map(preset => (
-            <Button
-              key={preset.id}
-              variant="outline"
-              onClick={() => addText(preset.config)}
-              disabled={!originalImage}
-              className="flex flex-col h-auto py-3 items-center justify-center space-y-1"
-            >
-              <Type className="w-5 h-5" />
-              <span className="text-xs">{preset.name}</span>
-            </Button>
-          ))}
-        </div>
-
-        <Button 
-          className="w-full" 
-          onClick={() => addText()} 
-          disabled={!originalImage}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          添加自定义文字
-        </Button>
+        <h3 className="text-lg font-semibold text-gray-900">文字设置</h3>
+        <p className="text-sm text-gray-500 mt-1">选择文字进行编辑</p>
       </div>
 
-      {selectedText && (
-        <div className="space-y-4 pt-4 border-t">
+      {selectedText ? (
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium flex items-center">
               <Settings2 className="w-4 h-4 mr-2" />
-              文字设置
+              编辑文字
             </h4>
             <Button variant="ghost" size="sm" onClick={() => removeText(selectedText.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
               <Trash2 className="w-4 h-4" />
@@ -298,11 +338,11 @@ export default function TextCore() {
                   value={selectedText.fontFamily}
                   onChange={(e) => updateText(selectedText.id, { fontFamily: e.target.value })}
                 >
-                  <option value="sans-serif">无衬线 (Sans-serif)</option>
-                  <option value="serif">衬线 (Serif)</option>
-                  <option value="monospace">等宽 (Monospace)</option>
-                  <option value="cursive">手写 (Cursive)</option>
-                  <option value="fantasy">艺术 (Fantasy)</option>
+                  <option value="sans-serif">无衬线</option>
+                  <option value="serif">衬线</option>
+                  <option value="monospace">等宽</option>
+                  <option value="cursive">手写</option>
+                  <option value="fantasy">艺术</option>
                 </select>
               </div>
 
@@ -317,141 +357,16 @@ export default function TextCore() {
                 />
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>字间距: {selectedText.letterSpacing || 0}px</Label>
-                <Slider
-                  value={[selectedText.letterSpacing || 0]}
-                  min={-10}
-                  max={50}
-                  step={1}
-                  onValueChange={(val) => updateText(selectedText.id, { letterSpacing: Array.isArray(val) ? val[0] : (val as any) })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>行高: {selectedText.lineHeight || 1}</Label>
-                <Slider
-                  value={[selectedText.lineHeight || 1]}
-                  min={0.5}
-                  max={3}
-                  step={0.1}
-                  onValueChange={(val) => updateText(selectedText.id, { lineHeight: Array.isArray(val) ? val[0] : (val as any) })}
-                />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t space-y-4">
-              <Label className="font-semibold">背景设置</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>背景颜色</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={selectedText.bgFill || '#ffffff'}
-                      onChange={(e) => updateText(selectedText.id, { bgFill: e.target.value })}
-                      className="w-12 h-10 p-1 cursor-pointer"
-                    />
-                    <Input
-                      type="text"
-                      value={selectedText.bgFill || ''}
-                      onChange={(e) => updateText(selectedText.id, { bgFill: e.target.value })}
-                      placeholder="透明"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>圆角: {selectedText.bgRadius || 0}px</Label>
-                  <Slider
-                    value={[selectedText.bgRadius || 0]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onValueChange={(val) => updateText(selectedText.id, { bgRadius: Array.isArray(val) ? val[0] : (val as any) })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>背景内边距: {selectedText.bgPadding || 0}px</Label>
-                <Slider
-                  value={[selectedText.bgPadding || 0]}
-                  min={0}
-                  max={100}
-                  step={1}
-                  onValueChange={(val) => updateText(selectedText.id, { bgPadding: Array.isArray(val) ? val[0] : (val as any) })}
-                />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t space-y-4">
-              <Label className="font-semibold">阴影设置</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>阴影颜色</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={selectedText.shadowColor || '#000000'}
-                      onChange={(e) => updateText(selectedText.id, { shadowColor: e.target.value })}
-                      className="w-12 h-10 p-1 cursor-pointer"
-                    />
-                    <Input
-                      type="text"
-                      value={selectedText.shadowColor || ''}
-                      onChange={(e) => updateText(selectedText.id, { shadowColor: e.target.value })}
-                      placeholder="透明"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>模糊度: {selectedText.shadowBlur || 0}px</Label>
-                  <Slider
-                    value={[selectedText.shadowBlur || 0]}
-                    min={0}
-                    max={50}
-                    step={1}
-                    onValueChange={(val) => updateText(selectedText.id, { shadowBlur: Array.isArray(val) ? val[0] : (val as any) })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>X轴偏移: {selectedText.shadowOffsetX || 0}px</Label>
-                  <Slider
-                    value={[selectedText.shadowOffsetX || 0]}
-                    min={-50}
-                    max={50}
-                    step={1}
-                    onValueChange={(val) => updateText(selectedText.id, { shadowOffsetX: Array.isArray(val) ? val[0] : (val as any) })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Y轴偏移: {selectedText.shadowOffsetY || 0}px</Label>
-                  <Slider
-                    value={[selectedText.shadowOffsetY || 0]}
-                    min={-50}
-                    max={50}
-                    step={1}
-                    onValueChange={(val) => updateText(selectedText.id, { shadowOffsetY: Array.isArray(val) ? val[0] : (val as any) })}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          请点击画布上的文字进行编辑
         </div>
       )}
 
-      <div className="pt-6 border-t mt-auto">
-        <Button className="w-full" size="lg" onClick={handleExport} disabled={!originalImage}>
+      <div className="mt-auto pt-4 border-t">
+        <Button className="w-full" onClick={handleExport} disabled={!originalImage}>
           <Download className="w-4 h-4 mr-2" />
           导出图片
         </Button>
@@ -459,5 +374,5 @@ export default function TextCore() {
     </div>
   );
 
-  return <ToolLayout preview={preview} config={config} />;
+  return <ToolLayout presets={presets} preview={preview} settings={settings} />;
 }

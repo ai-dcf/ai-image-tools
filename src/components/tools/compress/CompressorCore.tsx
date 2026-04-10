@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useImageStore } from "@/store/useImageStore";
 import { ToolLayout } from "@/components/layout/ToolLayout";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -22,11 +21,17 @@ const formatFileSize = (bytes: number) => {
 };
 
 const formatLoadTime = (bytes: number) => {
-  const speed = 3 * 1024 * 1024; // 3MB/s
+  const speed = 3 * 1024 * 1024;
   const time = bytes / speed;
   if (time < 0.01) return "< 0.01s";
   return time.toFixed(2) + "s";
 };
+
+const PRESETS = [
+  { id: "wechat", name: "微信分享", format: "image/jpeg", quality: 80 },
+  { id: "xiaohongshu", name: "小红书", format: "image/webp", quality: 70 },
+  { id: "print", name: "无损打印", format: "image/png", quality: 100 },
+];
 
 export function CompressorCore() {
   const { originalFile, processedFile, originalImage, processedImage, setOriginalFile, setProcessedFile, setOriginalImage, setProcessedImage } = useImageStore();
@@ -34,7 +39,7 @@ export function CompressorCore() {
   const [isCompressing, setIsCompressing] = useState(false);
   const [quality, setQuality] = useState(80);
   const [format, setFormat] = useState("image/jpeg");
-  const [activeTab, setActiveTab] = useState("wechat");
+  const [activePreset, setActivePreset] = useState("wechat");
   const [maxWidthOrHeight, setMaxWidthOrHeight] = useState<number>(4096);
   const [sliderPosition, setSliderPosition] = useState(50);
 
@@ -48,17 +53,12 @@ export function CompressorCore() {
     }
   };
 
-  const applyPreset = useCallback((tab: string) => {
-    setActiveTab(tab);
-    if (tab === "wechat") {
-      setFormat("image/jpeg");
-      setQuality(80);
-    } else if (tab === "xiaohongshu") {
-      setFormat("image/webp");
-      setQuality(70);
-    } else if (tab === "print") {
-      setFormat("image/png"); // Using PNG for lossless
-      setQuality(100);
+  const applyPreset = useCallback((presetId: string) => {
+    const preset = PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      setActivePreset(presetId);
+      setFormat(preset.format);
+      setQuality(preset.quality);
     }
   }, []);
 
@@ -101,23 +101,75 @@ export function CompressorCore() {
     }
   };
 
+  const presets = (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900">图片压缩</h2>
+        <p className="text-sm text-gray-500 mt-1">选择预设方案快速优化</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">预设方案</Label>
+        <div className="space-y-2">
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              onClick={() => applyPreset(preset.id)}
+              className={cn(
+                "w-full text-left px-4 py-3 rounded-lg border transition-all",
+                activePreset === preset.id
+                  ? "bg-zinc-900 text-white border-zinc-900"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
+              )}
+            >
+              <div className="font-medium">{preset.name}</div>
+              <div className="text-xs mt-1 opacity-70">
+                {preset.format.split("/")[1].toUpperCase()} · {preset.quality}%
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t">
+        <input
+          type="file"
+          accept="image/*"
+          id="upload-image"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
+        <Label htmlFor="upload-image" className="cursor-pointer">
+          <Button className="w-full">
+            <Upload className="mr-2 h-4 w-4" />
+            上传图片
+          </Button>
+        </Label>
+        {originalImage && (
+          <Button 
+            variant="outline" 
+            className="w-full mt-2"
+            onClick={() => {
+              setOriginalFile(null);
+              setOriginalImage(null);
+              setProcessedFile(null);
+              setProcessedImage(null);
+            }}
+          >
+            重新上传
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   const preview = (
     <div className="flex h-full w-full flex-col items-center justify-center">
       {!originalImage ? (
-        <div className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white p-12 text-center hover:border-zinc-900 transition-colors">
+        <div className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white p-12 text-center">
           <Upload className="mb-4 h-12 w-12 text-zinc-300" />
           <h3 className="mb-2 text-lg font-semibold text-zinc-900">上传图片以压缩</h3>
           <p className="mb-4 text-sm text-zinc-500">支持 JPG, PNG, WebP 等格式</p>
-          <Label htmlFor="upload-image" className="cursor-pointer rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors">
-            选择文件
-          </Label>
-          <input
-            id="upload-image"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileUpload}
-          />
         </div>
       ) : (
         <div className="flex w-full flex-col items-center gap-6">
@@ -209,25 +261,14 @@ export function CompressorCore() {
     </div>
   );
 
-  const config = (
+  const settings = (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">图片压缩</h2>
-        <p className="text-sm text-gray-500">通过预设或自定义设置优化您的图片大小</p>
+        <h3 className="text-lg font-semibold text-gray-900">高级设置</h3>
+        <p className="text-sm text-gray-500 mt-1">自定义压缩参数</p>
       </div>
 
       <div className={!originalImage ? "space-y-4 opacity-50 pointer-events-none select-none transition-opacity" : "space-y-4 transition-opacity"}>
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">预设方案</Label>
-          <Tabs value={activeTab} onValueChange={applyPreset} className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="wechat" className="flex-1">微信分享</TabsTrigger>
-              <TabsTrigger value="xiaohongshu" className="flex-1">小红书</TabsTrigger>
-              <TabsTrigger value="print" className="flex-1">无损打印</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
         <div className="space-y-4 rounded-lg border bg-gray-50/50 p-4">
           <div className="space-y-2">
             <div className="flex justify-between">
@@ -241,7 +282,7 @@ export function CompressorCore() {
               step={1}
               onValueChange={(vals: number | readonly number[]) => {
                 setQuality(Array.isArray(vals) ? vals[0] : (vals as number));
-                setActiveTab("custom");
+                setActivePreset("");
               }}
             />
           </div>
@@ -253,7 +294,7 @@ export function CompressorCore() {
               value={maxWidthOrHeight} 
               onChange={(e) => {
                 setMaxWidthOrHeight(Number(e.target.value));
-                setActiveTab("custom");
+                setActivePreset("");
               }}
               min={1}
               className="bg-white"
@@ -267,7 +308,7 @@ export function CompressorCore() {
               onValueChange={(val: string | null) => {
               if (val) {
                 setFormat(val);
-                setActiveTab("custom");
+                setActivePreset("");
               }
             }}
             >
@@ -286,7 +327,7 @@ export function CompressorCore() {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-auto pt-4 border-t">
         <Button 
           className="w-full" 
           onClick={handleDownload}
@@ -295,23 +336,9 @@ export function CompressorCore() {
           <Download className="mr-2 h-4 w-4" />
           下载图片
         </Button>
-        {originalImage && (
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={() => {
-              setOriginalFile(null);
-              setOriginalImage(null);
-              setProcessedFile(null);
-              setProcessedImage(null);
-            }}
-          >
-            重新上传
-          </Button>
-        )}
       </div>
     </div>
   );
 
-  return <ToolLayout preview={preview} config={config} />;
+  return <ToolLayout presets={presets} preview={preview} settings={settings} />;
 }
