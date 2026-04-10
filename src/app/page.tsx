@@ -38,23 +38,6 @@ const tools = [
   },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring" as const, stiffness: 100, damping: 20 }
-  }
-};
-
 export default function Home() {
   const router = useRouter();
   const reset = useImageStore((state) => state.reset);
@@ -86,13 +69,28 @@ export default function Home() {
 
         {/* Tools List Section */}
         <motion.div 
-          variants={containerVariants}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+            }
+          }}
           initial="hidden"
           animate="visible"
           className="mt-32 border-t border-zinc-200"
         >
           {tools.map((tool, idx) => (
-            <motion.div key={tool.href} variants={itemVariants}>
+            <motion.div 
+              key={tool.href} 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { type: "spring", stiffness: 100, damping: 20 }
+                }
+              }}>
               <button
                 onClick={() => handleToolClick(tool.href)}
                 className="group flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 py-10 transition-colors hover:bg-zinc-50 w-full text-left"
