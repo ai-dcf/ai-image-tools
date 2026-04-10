@@ -1,0 +1,37 @@
+<h2>图片工具站功能确认</h2>
+<p class="subtitle">基于您的需求，我们需要确认一些核心逻辑和优先级</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="fabric" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>图形引擎：Fabric.js</h3>
+      <p>用于处理图层、文字、拼接和裁剪。您是否确认使用此方案？</p>
+    </div>
+  </div>
+  <div class="option" data-choice="zustand" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>状态管理：Zustand</h3>
+      <p>管理画布状态和历史记录（撤销/重做）。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="local-processing" onclick="toggleSelect(this)">
+    <div class="letter">3</div>
+    <div class="content">
+      <h3>纯客户端处理</h3>
+      <p>所有图片处理（压缩、裁剪等）都在浏览器端完成，无需服务器上传。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>确认核心功能优先级</h3>
+  <p>您提到的 5 个核心工具，我们计划按以下顺序实施：</p>
+  <ol>
+    <li><strong>压缩 (Compress)</strong> - 基础工具，验证预设逻辑</li>
+    <li><strong>裁剪 (Crop)</strong> - 验证 Fabric.js 交互</li>
+    <li><strong>拼接 (Collage)</strong> - 最复杂的布局逻辑</li>
+    <li><strong>文字 (Text) & 边框 (Border)</strong> - 丰富细节</li>
+  </ol>
+</div>
