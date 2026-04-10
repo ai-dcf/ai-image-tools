@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import getCroppedImg from "@/lib/cropImage";
 import { Upload, Download, Image as ImageIcon, RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImageUploadZone } from "@/components/common/ImageUploadZone";
 
 const PRESETS = [
   { id: "free", name: "自由", value: undefined },
@@ -39,9 +40,9 @@ export function CropCore() {
     [],
   );
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
+  const handleFilesSelected = (files: File[]) => {
+    if (files.length > 0) {
+      const file = files[0];
       const reader = new FileReader();
       reader.addEventListener("load", () => {
         setImageSrc(reader.result?.toString() || null);
@@ -116,15 +117,19 @@ export function CropCore() {
       </div>
 
       <div className="pt-4 border-t">
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-        />
         <Button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.onchange = (e) => {
+              const files = Array.from((e.target as HTMLInputElement).files || []);
+              if (files.length > 0) {
+                handleFilesSelected(files);
+              }
+            };
+            input.click();
+          }}
           className="w-full"
         >
           <Upload className="mr-2 h-4 w-4" />
@@ -161,13 +166,10 @@ export function CropCore() {
           />
         </div>
       ) : (
-        <div className="text-center p-6">
-          <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">暂无图片</h3>
-          <p className="text-sm text-gray-500">
-            请在左侧上传需要裁剪的图片
-          </p>
-        </div>
+        <ImageUploadZone 
+          onFilesSelected={handleFilesSelected}
+          className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white"
+        />
       )}
     </div>
   );

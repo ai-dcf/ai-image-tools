@@ -11,6 +11,7 @@ import { Upload, Download, ImageIcon } from 'lucide-react';
 import type { BorderSettings } from './BorderCanvas';
 import type Konva from 'konva';
 import { cn } from '@/lib/utils';
+import { ImageUploadZone } from '@/components/common/ImageUploadZone';
 
 const BorderCanvas = dynamic(() => import('./BorderCanvas'), { ssr: false });
 
@@ -64,9 +65,9 @@ export function BorderCore() {
     return () => window.removeEventListener('resize', updateSize);
   }, [originalImage]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
+  const handleFilesSelected = (files: File[]) => {
+    if (files.length > 0) {
+      const file = files[0];
       const reader = new FileReader();
       reader.addEventListener('load', () => {
         setOriginalImage(reader.result?.toString() || null);
@@ -139,15 +140,19 @@ export function BorderCore() {
       </div>
 
       <div className="pt-4 border-t">
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-        />
         <Button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.onchange = (e) => {
+              const files = Array.from((e.target as HTMLInputElement).files || []);
+              if (files.length > 0) {
+                handleFilesSelected(files);
+              }
+            };
+            input.click();
+          }}
           className="w-full"
         >
           <Upload className="mr-2 h-4 w-4" />
@@ -180,11 +185,10 @@ export function BorderCore() {
           containerHeight={containerSize.height}
         />
       ) : (
-        <div className="text-center p-6">
-          <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">暂无图片</h3>
-          <p className="text-sm text-gray-500">请在左侧上传需要添加边框的图片</p>
-        </div>
+        <ImageUploadZone 
+          onFilesSelected={handleFilesSelected}
+          className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white"
+        />
       )}
     </div>
   );

@@ -28,6 +28,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { ToolLayout } from "@/components/layout/ToolLayout";
 import { cn } from "@/lib/utils";
+import { ImageUploadZone } from "@/components/common/ImageUploadZone";
 
 const CollageCanvas = dynamic(() => import("./CollageCanvas"), {
   ssr: false,
@@ -127,14 +128,10 @@ export function CollageCore() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      const newImages = newFiles.map((file) => URL.createObjectURL(file));
-      setFiles([...files, ...newFiles]);
-      setImages([...images, ...newImages]);
-    }
-    e.target.value = "";
+  const handleFilesSelected = (newFiles: File[]) => {
+    const newImages = newFiles.map((file) => URL.createObjectURL(file));
+    setFiles([...files, ...newFiles]);
+    setImages([...images, ...newImages]);
   };
 
   const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,20 +207,22 @@ export function CollageCore() {
       </div>
 
       <div className="pt-4 border-t">
-        <input
-          id="collage-upload-left"
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleFileUpload}
-        />
-        <Label htmlFor="collage-upload-left" className="cursor-pointer">
-          <Button className="w-full">
-            <Upload className="mr-2 h-4 w-4" />
-            上传图片
-          </Button>
-        </Label>
+        <Button className="w-full" onClick={() => {
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.multiple = true;
+          input.onchange = (e) => {
+            const files = Array.from((e.target as HTMLInputElement).files || []);
+            if (files.length > 0) {
+              handleFilesSelected(files);
+            }
+          };
+          input.click();
+        }}>
+          <Upload className="mr-2 h-4 w-4" />
+          上传图片
+        </Button>
         {images.length > 0 && (
           <Button
             variant="outline"
@@ -256,7 +255,19 @@ export function CollageCore() {
             <Button
               variant="outline"
               className="w-full border-dashed"
-              onClick={() => document.getElementById("collage-upload-left")?.click()}
+              onClick={() => {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*";
+                input.multiple = true;
+                input.onchange = (e) => {
+                  const files = Array.from((e.target as HTMLInputElement).files || []);
+                  if (files.length > 0) {
+                    handleFilesSelected(files);
+                  }
+                };
+                input.click();
+              }}
             >
               <Plus className="w-4 h-4 mr-2" />
               继续添加
@@ -274,15 +285,11 @@ export function CollageCore() {
           <CollageCanvas images={images} preset={preset} settings={settings} />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center w-full max-w-md aspect-square border-2 border-dashed border-gray-300 rounded-xl bg-white shadow-sm">
-          <div className="bg-blue-50 p-4 rounded-full mb-4">
-            <Upload className="w-8 h-8 text-blue-500" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">上传图片开始拼图</h3>
-          <p className="text-gray-500 text-sm mb-6 text-center px-8">
-            支持上传多张图片，可随时在左侧调整图片顺序或删除
-          </p>
-        </div>
+        <ImageUploadZone 
+          onFilesSelected={handleFilesSelected}
+          multiple={true}
+          className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white"
+        />
       )}
     </div>
   );

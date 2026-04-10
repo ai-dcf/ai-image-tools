@@ -11,6 +11,7 @@ import { Upload, Download, Image as ImageIcon, RefreshCcw } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ImageUploadZone } from "@/components/common/ImageUploadZone";
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return "0 B";
@@ -43,8 +44,8 @@ export function CompressorCore() {
   const [maxWidthOrHeight, setMaxWidthOrHeight] = useState<number>(4096);
   const [sliderPosition, setSliderPosition] = useState(50);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFilesSelected = (files: File[]) => {
+    const file = files[0];
     if (file) {
       setOriginalFile(file);
       setOriginalImage(URL.createObjectURL(file));
@@ -132,15 +133,19 @@ export function CompressorCore() {
       </div>
 
       <div className="pt-4 border-t">
-        <input
-          type="file"
-          accept="image/*"
-          id="upload-image"
-          className="hidden"
-          onChange={handleFileUpload}
-        />
-        <Label htmlFor="upload-image" className="cursor-pointer">
-          <Button className="w-full">
+        <Label className="cursor-pointer">
+          <Button className="w-full" onClick={() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.onchange = (e) => {
+              const files = Array.from((e.target as HTMLInputElement).files || []);
+              if (files.length > 0) {
+                handleFilesSelected(files);
+              }
+            };
+            input.click();
+          }}>
             <Upload className="mr-2 h-4 w-4" />
             上传图片
           </Button>
@@ -166,11 +171,10 @@ export function CompressorCore() {
   const preview = (
     <div className="flex h-full w-full flex-col items-center justify-center">
       {!originalImage ? (
-        <div className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white p-12 text-center">
-          <Upload className="mb-4 h-12 w-12 text-zinc-300" />
-          <h3 className="mb-2 text-lg font-semibold text-zinc-900">上传图片以压缩</h3>
-          <p className="mb-4 text-sm text-zinc-500">支持 JPG, PNG, WebP 等格式</p>
-        </div>
+        <ImageUploadZone 
+          onFilesSelected={handleFilesSelected}
+          className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-white"
+        />
       ) : (
         <div className="flex w-full flex-col items-center gap-6">
           <div className="relative flex h-[60vh] min-h-[400px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-inner">
