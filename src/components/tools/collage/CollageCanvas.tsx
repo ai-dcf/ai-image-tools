@@ -39,6 +39,15 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
   // If no images, show nothing
   if (images.length === 0) return null;
 
+  const containerStyle: React.CSSProperties = {
+    backgroundColor: settings.backgroundColor,
+    backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : "none",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+    position: "relative",
+  };
+
   const renderGrid = () => {
     // Up to 9 images
     const gridImages = images.slice(0, 9);
@@ -56,10 +65,9 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
           gridTemplateColumns: `repeat(${cols}, 1fr)`,
           gap: `${settings.gap}px`,
           padding: `${settings.gap}px`,
-          backgroundColor: settings.backgroundColor,
           width: "100%",
           aspectRatio: "1 / 1",
-          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+          ...containerStyle,
         }}
       >
         {gridImages.map((img, i) => (
@@ -71,11 +79,11 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
               position: "relative",
               width: "100%",
               height: "100%",
-              backgroundColor: "#f3f4f6", // placeholder color
+              backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6",
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
           </div>
         ))}
       </div>
@@ -83,7 +91,7 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
   };
 
   const renderCompare = () => {
-    // Exactly 2 images side by side (or top/bottom if needed, but compare is usually left/right)
+    // Exactly 2 images side by side
     const compareImages = images.slice(0, 2);
     // Pad with empty strings if less than 2
     while (compareImages.length < 2) compareImages.push("");
@@ -95,10 +103,9 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
           display: "flex",
           gap: `${settings.gap}px`,
           padding: `${settings.gap}px`,
-          backgroundColor: settings.backgroundColor,
           width: "100%",
           aspectRatio: "16 / 9",
-          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+          ...containerStyle,
         }}
       >
         {compareImages.map((img, i) => (
@@ -108,7 +115,7 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
               flex: 1,
               borderRadius: `${settings.borderRadius}px`,
               overflow: "hidden",
-              backgroundColor: "#f3f4f6",
+              backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -116,12 +123,36 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
           >
             {img ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
             ) : (
               <span style={{ color: "#9ca3af", fontSize: "14px" }}>等待图片...</span>
             )}
           </div>
         ))}
+        {/* VS Element */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 10,
+            width: "48px",
+            height: "48px",
+            backgroundColor: "#fff",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+            fontSize: "18px",
+            color: "#1f2937",
+            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+            border: "2px solid #f3f4f6",
+          }}
+        >
+          VS
+        </div>
       </div>
     );
   };
@@ -138,47 +169,46 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
           flexDirection: "column",
           gap: `${settings.gap}px`,
           padding: `${settings.gap}px`,
-          backgroundColor: settings.backgroundColor,
           width: "100%",
           maxWidth: "400px", // constrain width to look like a phone screen somewhat
           aspectRatio: "3 / 4",
-          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+          ...containerStyle,
         }}
       >
         {xhsImages.length === 1 && (
-          <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+          <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
           </div>
         )}
 
         {xhsImages.length === 2 && (
           <>
-            <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+            <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
             </div>
-            <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+            <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={xhsImages[1]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src={xhsImages[1]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
             </div>
           </>
         )}
 
         {xhsImages.length === 3 && (
           <>
-            <div style={{ flex: 2, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+            <div style={{ flex: 2, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
             </div>
             <div style={{ flex: 1, display: "flex", gap: `${settings.gap}px` }}>
-              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={xhsImages[1]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={xhsImages[1]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
               </div>
-              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={xhsImages[2]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={xhsImages[2]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
               </div>
             </div>
           </>
@@ -187,23 +217,23 @@ export default function CollageCanvas({ images, preset, settings }: CollageCanva
         {xhsImages.length >= 4 && (
           <>
             <div style={{ flex: 1, display: "flex", gap: `${settings.gap}px` }}>
-              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={xhsImages[0]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
               </div>
-              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={xhsImages[1]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={xhsImages[1]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
               </div>
             </div>
             <div style={{ flex: 1, display: "flex", gap: `${settings.gap}px` }}>
-              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={xhsImages[2]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={xhsImages[2]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
               </div>
-              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden" }}>
+              <div style={{ flex: 1, borderRadius: `${settings.borderRadius}px`, overflow: "hidden", backgroundColor: settings.backgroundImage ? "transparent" : "#f3f4f6" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={xhsImages[3]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={xhsImages[3]} alt="" style={{ width: "100%", height: "100%", objectFit: settings.objectFit, display: "block" }} />
               </div>
             </div>
           </>

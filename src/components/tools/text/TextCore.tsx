@@ -24,8 +24,8 @@ const PRESETS = [
       fill: '#ffffff',
       stroke: '#000000',
       strokeWidth: 2,
-      fontFamily: 'sans-serif',
-      text: '在这里输入金句'
+      fontFamily: 'serif',
+      text: '"金句在这里"'
     }
   },
   {
@@ -33,9 +33,11 @@ const PRESETS = [
     name: '视频标题',
     config: {
       fontSize: 60,
-      fill: '#ffff00',
+      fill: '#000000',
       stroke: '#ff0000',
       strokeWidth: 3,
+      bgFill: '#ffff00',
+      bgPadding: 10,
       fontFamily: 'sans-serif',
       text: '震撼发布'
     }
@@ -45,23 +47,31 @@ const PRESETS = [
     name: '水印',
     config: {
       fontSize: 24,
-      fill: 'rgba(255, 255, 255, 0.5)',
-      stroke: 'rgba(0, 0, 0, 0)',
+      fill: '#ffffff',
+      stroke: 'transparent',
       strokeWidth: 0,
+      opacity: 0.5,
+      x: 300,
+      y: 300,
       fontFamily: 'sans-serif',
       text: '@我的账号'
     }
   },
   {
-    id: 'tag',
+    id: 'badge',
     name: '标签',
     config: {
       fontSize: 30,
-      fill: '#000000',
-      stroke: '#ffffff',
-      strokeWidth: 2,
+      fill: '#ffffff',
+      stroke: 'transparent',
+      strokeWidth: 0,
+      bgFill: '#ff0000',
+      bgRadius: 10,
+      bgPadding: 8,
+      x: 300,
+      y: 50,
       fontFamily: 'sans-serif',
-      text: '#生活记录'
+      text: '新发布'
     }
   }
 ];
@@ -81,18 +91,22 @@ export default function TextCore() {
     }
   };
 
-  const addText = (preset?: typeof PRESETS[0]['config']) => {
+  const addText = (preset?: any) => {
     const newText: TextItem = {
       // eslint-disable-next-line react-hooks/purity
       id: `text-${Math.random().toString(36).substr(2, 9)}`,
       text: preset?.text || '双击编辑文字',
-      x: 50,
-      y: 50,
+      x: preset?.x !== undefined ? preset.x : 50,
+      y: preset?.y !== undefined ? preset.y : 50,
       fontSize: preset?.fontSize || 40,
       fill: preset?.fill || '#000000',
       stroke: preset?.stroke || '#ffffff',
       strokeWidth: preset?.strokeWidth !== undefined ? preset.strokeWidth : 1,
       fontFamily: preset?.fontFamily || 'sans-serif',
+      opacity: preset?.opacity !== undefined ? preset.opacity : 1,
+      bgFill: preset?.bgFill || '',
+      bgPadding: preset?.bgPadding || 0,
+      bgRadius: preset?.bgRadius || 0,
     };
     setTexts([...texts, newText]);
     setSelectedId(newText.id);
@@ -274,6 +288,163 @@ export default function TextCore() {
                 step={1}
                 onValueChange={(val) => updateText(selectedText.id, { strokeWidth: Array.isArray(val) ? val[0] : (val as any) })}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>字体</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={selectedText.fontFamily}
+                  onChange={(e) => updateText(selectedText.id, { fontFamily: e.target.value })}
+                >
+                  <option value="sans-serif">无衬线 (Sans-serif)</option>
+                  <option value="serif">衬线 (Serif)</option>
+                  <option value="monospace">等宽 (Monospace)</option>
+                  <option value="cursive">手写 (Cursive)</option>
+                  <option value="fantasy">艺术 (Fantasy)</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>不透明度: {Math.round((selectedText.opacity ?? 1) * 100)}%</Label>
+                <Slider
+                  value={[selectedText.opacity ?? 1]}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  onValueChange={(val) => updateText(selectedText.id, { opacity: Array.isArray(val) ? val[0] : (val as any) })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>字间距: {selectedText.letterSpacing || 0}px</Label>
+                <Slider
+                  value={[selectedText.letterSpacing || 0]}
+                  min={-10}
+                  max={50}
+                  step={1}
+                  onValueChange={(val) => updateText(selectedText.id, { letterSpacing: Array.isArray(val) ? val[0] : (val as any) })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>行高: {selectedText.lineHeight || 1}</Label>
+                <Slider
+                  value={[selectedText.lineHeight || 1]}
+                  min={0.5}
+                  max={3}
+                  step={0.1}
+                  onValueChange={(val) => updateText(selectedText.id, { lineHeight: Array.isArray(val) ? val[0] : (val as any) })}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t space-y-4">
+              <Label className="font-semibold">背景设置</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>背景颜色</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={selectedText.bgFill || '#ffffff'}
+                      onChange={(e) => updateText(selectedText.id, { bgFill: e.target.value })}
+                      className="w-12 h-10 p-1 cursor-pointer"
+                    />
+                    <Input
+                      type="text"
+                      value={selectedText.bgFill || ''}
+                      onChange={(e) => updateText(selectedText.id, { bgFill: e.target.value })}
+                      placeholder="透明"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>圆角: {selectedText.bgRadius || 0}px</Label>
+                  <Slider
+                    value={[selectedText.bgRadius || 0]}
+                    min={0}
+                    max={100}
+                    step={1}
+                    onValueChange={(val) => updateText(selectedText.id, { bgRadius: Array.isArray(val) ? val[0] : (val as any) })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>背景内边距: {selectedText.bgPadding || 0}px</Label>
+                <Slider
+                  value={[selectedText.bgPadding || 0]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={(val) => updateText(selectedText.id, { bgPadding: Array.isArray(val) ? val[0] : (val as any) })}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t space-y-4">
+              <Label className="font-semibold">阴影设置</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>阴影颜色</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={selectedText.shadowColor || '#000000'}
+                      onChange={(e) => updateText(selectedText.id, { shadowColor: e.target.value })}
+                      className="w-12 h-10 p-1 cursor-pointer"
+                    />
+                    <Input
+                      type="text"
+                      value={selectedText.shadowColor || ''}
+                      onChange={(e) => updateText(selectedText.id, { shadowColor: e.target.value })}
+                      placeholder="透明"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>模糊度: {selectedText.shadowBlur || 0}px</Label>
+                  <Slider
+                    value={[selectedText.shadowBlur || 0]}
+                    min={0}
+                    max={50}
+                    step={1}
+                    onValueChange={(val) => updateText(selectedText.id, { shadowBlur: Array.isArray(val) ? val[0] : (val as any) })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>X轴偏移: {selectedText.shadowOffsetX || 0}px</Label>
+                  <Slider
+                    value={[selectedText.shadowOffsetX || 0]}
+                    min={-50}
+                    max={50}
+                    step={1}
+                    onValueChange={(val) => updateText(selectedText.id, { shadowOffsetX: Array.isArray(val) ? val[0] : (val as any) })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Y轴偏移: {selectedText.shadowOffsetY || 0}px</Label>
+                  <Slider
+                    value={[selectedText.shadowOffsetY || 0]}
+                    min={-50}
+                    max={50}
+                    step={1}
+                    onValueChange={(val) => updateText(selectedText.id, { shadowOffsetY: Array.isArray(val) ? val[0] : (val as any) })}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

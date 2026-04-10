@@ -6,11 +6,13 @@ import { ToolLayout } from '@/components/layout/ToolLayout'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import getCroppedImg from '@/lib/cropImage'
 import { Upload, Download, Image as ImageIcon, RotateCw } from 'lucide-react'
 
 const PRESETS = [
   { name: '自由 (Free)', value: undefined },
+  { name: '朋友圈/头像 (1:1)', value: 1 / 1 },
   { name: '小红书 (3:4)', value: 3 / 4 },
   { name: '微信公众号首图 (2.35:1)', value: 2.35 / 1 },
   { name: '抖音 (9:16)', value: 9 / 16 },
@@ -22,6 +24,9 @@ export function CropCore() {
   const [zoom, setZoom] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [aspect, setAspect] = useState<number | undefined>(undefined)
+  const [flip, setFlip] = useState({ horizontal: false, vertical: false })
+  const [outputWidth, setOutputWidth] = useState<string>('')
+  const [outputHeight, setOutputHeight] = useState<string>('')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -46,10 +51,16 @@ export function CropCore() {
     if (!imageSrc || !croppedAreaPixels) return
 
     try {
+      const outputSize = {
+        width: outputWidth ? parseInt(outputWidth, 10) : undefined,
+        height: outputHeight ? parseInt(outputHeight, 10) : undefined,
+      }
       const croppedImage = await getCroppedImg(
         imageSrc,
         croppedAreaPixels,
-        rotation
+        rotation,
+        flip,
+        outputSize
       )
       
       if (croppedImage) {
@@ -73,6 +84,7 @@ export function CropCore() {
             zoom={zoom}
             rotation={rotation}
             aspect={aspect}
+            transform={`translate(${crop.x}px, ${crop.y}px) rotate(${rotation}deg) scale(${zoom * (flip.horizontal ? -1 : 1)}, ${zoom * (flip.vertical ? -1 : 1)})`}
             onCropChange={setCrop}
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
@@ -167,6 +179,49 @@ export function CropCore() {
               >
                 <RotateCw className="h-4 w-4" />
               </Button>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <div className="flex justify-between">
+              <Label>翻转</Label>
+            </div>
+            <div className="flex gap-4">
+              <Button 
+                variant={flip.horizontal ? "default" : "outline"} 
+                onClick={() => setFlip(f => ({ ...f, horizontal: !f.horizontal }))}
+                className="flex-1"
+              >
+                水平翻转
+              </Button>
+              <Button 
+                variant={flip.vertical ? "default" : "outline"} 
+                onClick={() => setFlip(f => ({ ...f, vertical: !f.vertical }))}
+                className="flex-1"
+              >
+                垂直翻转
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <Label>精确输出尺寸 (可选)</Label>
+            <div className="flex gap-2 items-center">
+              <Input 
+                type="number" 
+                placeholder="宽 (px)" 
+                value={outputWidth}
+                onChange={(e) => setOutputWidth(e.target.value)}
+                className="flex-1"
+              />
+              <span className="text-gray-500">x</span>
+              <Input 
+                type="number" 
+                placeholder="高 (px)" 
+                value={outputHeight}
+                onChange={(e) => setOutputHeight(e.target.value)}
+                className="flex-1"
+              />
             </div>
           </div>
 

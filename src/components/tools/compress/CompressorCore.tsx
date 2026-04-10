@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Upload, Download, Image as ImageIcon, RefreshCcw } from "lucide-react";
 import imageCompression from "browser-image-compression";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const formatFileSize = (bytes: number) => {
@@ -20,6 +21,13 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
+const formatLoadTime = (bytes: number) => {
+  const speed = 3 * 1024 * 1024; // 3MB/s
+  const time = bytes / speed;
+  if (time < 0.01) return "< 0.01s";
+  return time.toFixed(2) + "s";
+};
+
 export function CompressorCore() {
   const { originalFile, processedFile, originalImage, processedImage, setOriginalFile, setProcessedFile, setOriginalImage, setProcessedImage } = useImageStore();
   
@@ -27,6 +35,8 @@ export function CompressorCore() {
   const [quality, setQuality] = useState(80);
   const [format, setFormat] = useState("image/jpeg");
   const [activeTab, setActiveTab] = useState("wechat");
+  const [maxWidthOrHeight, setMaxWidthOrHeight] = useState<number>(4096);
+  const [sliderPosition, setSliderPosition] = useState(50);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,11 +69,10 @@ export function CompressorCore() {
     try {
       const options = {
         maxSizeMB: 50,
-        maxWidthOrHeight: 4096,
+        maxWidthOrHeight: maxWidthOrHeight || undefined,
         useWebWorker: true,
         fileType: format,
         initialQuality: quality / 100,
-        alwaysKeepResolution: true,
       };
 
       const compressedFile = await imageCompression(originalFile, options);
@@ -74,7 +83,7 @@ export function CompressorCore() {
     } finally {
       setIsCompressing(false);
     }
-  }, [originalFile, format, quality, setProcessedFile, setProcessedImage]);
+  }, [originalFile, format, quality, maxWidthOrHeight, setProcessedFile, setProcessedImage]);
 
   useEffect(() => {
     if (originalFile) {
@@ -111,47 +120,89 @@ export function CompressorCore() {
           />
         </div>
       ) : (
-        <div className="flex w-full flex-col items-center gap-6 md:flex-row md:items-stretch">
-          <div className="flex flex-1 flex-col items-center gap-2 rounded-xl bg-white p-4 shadow-sm">
-            <h4 className="font-medium text-gray-700">原图</h4>
-            <div className="relative flex h-64 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-100">
-              <img src={originalImage} alt="Original" className="max-h-full max-w-full object-contain" />
-            </div>
-            {originalFile && (
-              <p className="text-sm font-medium text-gray-600">
-                大小: {formatFileSize(originalFile.size)}
-              </p>
+        <div className="flex w-full flex-col items-center gap-6">
+          <div className="relative flex h-[60vh] min-h-[400px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-inner">
+            {originalImage && (
+              <img src={originalImage} alt="Original" className="absolute h-full w-full object-contain pointer-events-none" />
+            )}
+            
+            {processedImage && (
+              <img 
+                src={processedImage} 
+                alt="Processed" 
+                className="absolute h-full w-full object-contain pointer-events-none"
+                style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }} 
+              />
+            )}
+
+            {processedImage && (
+              <>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={sliderPosition} 
+                  onChange={(e) => setSliderPosition(Number(e.target.value))}
+                  className="absolute inset-0 z-10 h-full w-full cursor-ew-resize opacity-0"
+                />
+                <div 
+                  className="pointer-events-none absolute bottom-0 top-0 z-0 w-1 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)]"
+                  style={{ left: `${sliderPosition}%` }}
+                >
+                  <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><path d="m9 18 6-6-6-6"/></svg>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {isCompressing && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/10 backdrop-blur-[1px]">
+                <div className="flex flex-col items-center gap-2 rounded-lg bg-white/90 p-4 shadow-lg">
+                  <RefreshCcw className="h-8 w-8 animate-spin text-blue-500" />
+                  <span className="text-sm font-medium text-gray-700">压缩中...</span>
+                </div>
+              </div>
             )}
           </div>
-          <div className="flex flex-1 flex-col items-center gap-2 rounded-xl bg-white p-4 shadow-sm">
-            <h4 className="font-medium text-gray-700">压缩后</h4>
-            <div className="relative flex h-64 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-100">
-              {isCompressing ? (
-                <div className="flex flex-col items-center gap-2 text-gray-500">
-                  <RefreshCcw className="h-8 w-8 animate-spin" />
-                  <span className="text-sm">压缩中...</span>
-                </div>
-              ) : processedImage ? (
-                <img src={processedImage} alt="Processed" className="max-h-full max-w-full object-contain" />
-              ) : (
-                <div className="flex flex-col items-center gap-2 text-gray-400">
-                  <ImageIcon className="h-8 w-8" />
-                  <span className="text-sm">等待压缩</span>
+
+          <div className="grid w-full grid-cols-2 gap-4">
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl bg-white p-4 shadow-sm">
+              <h4 className="font-medium text-gray-700">原图</h4>
+              {originalFile && (
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600">{formatFileSize(originalFile.size)}</p>
+                  <p className="mt-1 text-xs text-gray-500">预估加载时间: {formatLoadTime(originalFile.size)}</p>
                 </div>
               )}
             </div>
-            {processedFile && (
-              <div className="flex flex-col items-center text-sm font-medium">
-                <p className={cn("text-green-600", originalFile && processedFile.size > originalFile.size && "text-red-600")}>
-                  大小: {formatFileSize(processedFile.size)}
-                </p>
-                {originalFile && processedFile.size < originalFile.size && (
-                  <p className="text-xs text-gray-500">
-                    节省了 {Math.round((1 - processedFile.size / originalFile.size) * 100)}%
+            
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl bg-white p-4 shadow-sm">
+              <h4 className="font-medium text-gray-700">压缩后</h4>
+              {processedFile ? (
+                <div className="text-center">
+                  <p className={cn("text-sm font-medium", processedFile.size > (originalFile?.size || 0) ? "text-red-600" : "text-green-600")}>
+                    {formatFileSize(processedFile.size)}
                   </p>
-                )}
-              </div>
-            )}
+                  <p className="mt-1 text-xs text-gray-500">预估加载时间: {formatLoadTime(processedFile.size)}</p>
+                  {originalFile && processedFile.size < originalFile.size && (
+                    <p className="mt-1 text-xs font-medium text-green-600">
+                      ↓ 节省 {Math.round((1 - processedFile.size / originalFile.size) * 100)}%
+                    </p>
+                  )}
+                </div>
+              ) : isCompressing ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <RefreshCcw className="h-4 w-4 animate-spin" />
+                  处理中
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <ImageIcon className="h-4 w-4" />
+                  等待压缩
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -192,6 +243,20 @@ export function CompressorCore() {
                 setQuality(Array.isArray(vals) ? vals[0] : (vals as number));
                 setActiveTab("custom");
               }}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">最大尺寸限制 (px)</Label>
+            <Input 
+              type="number" 
+              value={maxWidthOrHeight} 
+              onChange={(e) => {
+                setMaxWidthOrHeight(Number(e.target.value));
+                setActiveTab("custom");
+              }}
+              min={1}
+              className="bg-white"
             />
           </div>
 

@@ -17,19 +17,19 @@ const BorderCanvas = dynamic(() => import('./BorderCanvas'), { ssr: false });
 const PRESETS = [
   {
     name: '拍立得',
-    settings: { paddingTop: 40, paddingRight: 40, paddingBottom: 160, paddingLeft: 40, color: '#ffffff', radius: 0 }
+    settings: { paddingTop: 40, paddingRight: 40, paddingBottom: 160, paddingLeft: 40, color: '#ffffff', radius: 0, strokeWidth: 0, strokeColor: '#000000' }
   },
   {
     name: '极简',
-    settings: { paddingTop: 40, paddingRight: 40, paddingBottom: 40, paddingLeft: 40, color: '#ffffff', radius: 0 }
+    settings: { paddingTop: 20, paddingRight: 20, paddingBottom: 20, paddingLeft: 20, color: '#ffffff', radius: 0, strokeWidth: 1, strokeColor: '#000000' }
   },
   {
     name: '莫兰迪',
-    settings: { paddingTop: 60, paddingRight: 60, paddingBottom: 60, paddingLeft: 60, color: '#d0c4b4', radius: 16 }
+    settings: { paddingTop: 60, paddingRight: 60, paddingBottom: 60, paddingLeft: 60, color: '#d0c4b4', radius: 16, strokeWidth: 0, strokeColor: '#000000' }
   },
   {
     name: '电影感',
-    settings: { paddingTop: 80, paddingRight: 0, paddingBottom: 80, paddingLeft: 0, color: '#000000', radius: 0 }
+    settings: { paddingTop: 80, paddingRight: 0, paddingBottom: 80, paddingLeft: 0, color: '#000000', radius: 0, strokeWidth: 0, strokeColor: '#ffffff' }
   }
 ];
 
@@ -41,6 +41,7 @@ export function BorderCore() {
 
   const [settings, setSettings] = useState<BorderSettings>(PRESETS[0].settings);
   const [activePreset, setActivePreset] = useState<string>(PRESETS[0].name);
+  const [unifiedPadding, setUnifiedPadding] = useState<boolean>(false);
 
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
@@ -88,7 +89,20 @@ export function BorderCore() {
   };
 
   const updateSetting = (key: keyof BorderSettings, value: string | number) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings(prev => {
+      const newSettings = { ...prev, [key]: value };
+      
+      if (unifiedPadding && typeof value === 'number') {
+        if (key === 'paddingTop' || key === 'paddingBottom' || key === 'paddingLeft' || key === 'paddingRight') {
+          newSettings.paddingTop = value;
+          newSettings.paddingBottom = value;
+          newSettings.paddingLeft = value;
+          newSettings.paddingRight = value;
+        }
+      }
+      
+      return newSettings;
+    });
     setActivePreset(''); // 手动调整时清除选中状态
   };
 
@@ -159,7 +173,18 @@ export function BorderCore() {
           </div>
 
           <div className="space-y-4 pt-4 border-t">
-            <Label>边距设置</Label>
+            <div className="flex justify-between items-center">
+              <Label>边距设置</Label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={unifiedPadding}
+                  onChange={(e) => setUnifiedPadding(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                统一边距
+              </label>
+            </div>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <span className="w-12 text-sm text-gray-500">上边距</span>
@@ -241,6 +266,40 @@ export function BorderCore() {
                 type="color"
                 value={settings.color}
                 onChange={(e) => updateSetting('color', e.target.value)}
+                className="w-8 h-8 p-0 border-0 rounded cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <div className="flex justify-between items-center">
+              <Label>内边框宽度</Label>
+              <span className="text-xs text-gray-500">{settings.strokeWidth}px</span>
+            </div>
+            <Slider
+              value={[settings.strokeWidth]}
+              min={0}
+              max={20}
+              step={1}
+              onValueChange={(val: number | readonly number[]) => updateSetting('strokeWidth', Array.isArray(val) ? val[0] : (val as number))}
+            />
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <Label>内边框颜色</Label>
+            <div className="flex gap-2">
+              {['#ffffff', '#000000', '#d0c4b4', '#f1f5f9', '#fecdd3', '#e0f2fe'].map(color => (
+                <button
+                  key={`stroke-${color}`}
+                  onClick={() => updateSetting('strokeColor', color)}
+                  className={`w-8 h-8 rounded-full border-2 ${settings.strokeColor === color ? 'border-blue-500' : 'border-gray-200'}`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+              <input
+                type="color"
+                value={settings.strokeColor}
+                onChange={(e) => updateSetting('strokeColor', e.target.value)}
                 className="w-8 h-8 p-0 border-0 rounded cursor-pointer"
               />
             </div>

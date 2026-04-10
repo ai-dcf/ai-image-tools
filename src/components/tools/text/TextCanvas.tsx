@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Stage, Layer, Image as KonvaImage, Text, Transformer } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Text, Transformer, Label, Tag } from 'react-konva';
 import useImage from 'use-image';
 
 export interface TextItem {
@@ -12,6 +12,16 @@ export interface TextItem {
   stroke: string;
   strokeWidth: number;
   fontFamily: string;
+  letterSpacing?: number;
+  lineHeight?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+  bgFill?: string;
+  bgPadding?: number;
+  bgRadius?: number;
+  opacity?: number;
 }
 
 interface TextCanvasProps {
@@ -38,36 +48,83 @@ const TextNode = ({ shapeProps, isSelected, onSelect, onChange }: any) => {
     }
   }, [isSelected]);
 
+  const hasBg = !!shapeProps.bgFill;
+
+  const handleDragEnd = (e: any) => {
+    onChange({
+      ...shapeProps,
+      x: e.target.x(),
+      y: e.target.y(),
+    });
+  };
+
+  const handleTransformEnd = () => {
+    const node = shapeRef.current;
+    if (!node) return;
+    const scaleX = node.scaleX();
+
+    node.scaleX(1);
+    node.scaleY(1);
+
+    onChange({
+      ...shapeProps,
+      x: node.x(),
+      y: node.y(),
+      fontSize: Math.max(5, (shapeProps.fontSize || 40) * scaleX),
+    });
+  };
+
+  const commonProps = {
+    x: shapeProps.x,
+    y: shapeProps.y,
+    draggable: true,
+    onClick: onSelect,
+    onTap: onSelect,
+    onDragEnd: handleDragEnd,
+    onTransformEnd: handleTransformEnd,
+    opacity: shapeProps.opacity !== undefined ? shapeProps.opacity : 1,
+  };
+
+  const textProps = {
+    text: shapeProps.text,
+    fontSize: shapeProps.fontSize,
+    fill: shapeProps.fill,
+    stroke: shapeProps.stroke,
+    strokeWidth: shapeProps.strokeWidth,
+    fontFamily: shapeProps.fontFamily,
+    letterSpacing: shapeProps.letterSpacing || 0,
+    lineHeight: shapeProps.lineHeight || 1,
+  };
+
+  const shadowProps = {
+    shadowColor: shapeProps.shadowColor || 'transparent',
+    shadowBlur: shapeProps.shadowBlur || 0,
+    shadowOffsetX: shapeProps.shadowOffsetX || 0,
+    shadowOffsetY: shapeProps.shadowOffsetY || 0,
+  };
+
   return (
     <React.Fragment>
-      <Text
-        onClick={onSelect}
-        onTap={onSelect}
-        ref={shapeRef}
-        {...shapeProps}
-        draggable
-        onDragEnd={(e) => {
-          onChange({
-            ...shapeProps,
-            x: e.target.x(),
-            y: e.target.y(),
-          });
-        }}
-        onTransformEnd={() => {
-          const node = shapeRef.current;
-          const scaleX = node.scaleX();
-
-          node.scaleX(1);
-          node.scaleY(1);
-
-          onChange({
-            ...shapeProps,
-            x: node.x(),
-            y: node.y(),
-            fontSize: Math.max(5, node.fontSize() * scaleX),
-          });
-        }}
-      />
+      {hasBg ? (
+        <Label {...commonProps} ref={shapeRef}>
+          <Tag
+            fill={shapeProps.bgFill}
+            cornerRadius={shapeProps.bgRadius || 0}
+            {...shadowProps}
+          />
+          <Text
+            {...textProps}
+            padding={shapeProps.bgPadding || 0}
+          />
+        </Label>
+      ) : (
+        <Text
+          {...commonProps}
+          {...textProps}
+          {...shadowProps}
+          ref={shapeRef}
+        />
+      )}
       {isSelected && (
         <Transformer
           ref={trRef}

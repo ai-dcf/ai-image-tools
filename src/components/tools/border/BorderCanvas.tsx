@@ -12,6 +12,8 @@ export interface BorderSettings {
   paddingLeft: number;
   color: string;
   radius: number;
+  strokeWidth: number;
+  strokeColor: string;
 }
 
 interface BorderCanvasProps {
@@ -69,6 +71,18 @@ const BorderCanvas = forwardRef<Konva.Stage, BorderCanvasProps>(
             width={image.width}
             height={image.height}
           />
+          {/* 描边（内边框线条） */}
+          {settings.strokeWidth > 0 && (
+            <Rect
+              x={settings.paddingLeft}
+              y={settings.paddingTop}
+              width={image.width}
+              height={image.height}
+              stroke={settings.strokeColor}
+              strokeWidth={settings.strokeWidth}
+              listening={false}
+            />
+          )}
         </Layer>
       </Stage>
     );

@@ -32,7 +32,8 @@ export default async function getCroppedImg(
   imageSrc: string,
   pixelCrop: { x: number; y: number; width: number; height: number },
   rotation = 0,
-  flip = { horizontal: false, vertical: false }
+  flip = { horizontal: false, vertical: false },
+  outputSize?: { width?: number; height?: number }
 ): Promise<string | null> {
   const image = await createImage(imageSrc)
   const canvas = document.createElement('canvas')
@@ -72,9 +73,13 @@ export default async function getCroppedImg(
     return null
   }
 
+  // Calculate final size maintaining aspect ratio if only one dimension is provided
+  const finalWidth = outputSize?.width || (outputSize?.height ? (outputSize.height * pixelCrop.width / pixelCrop.height) : pixelCrop.width)
+  const finalHeight = outputSize?.height || (outputSize?.width ? (outputSize.width * pixelCrop.height / pixelCrop.width) : pixelCrop.height)
+
   // Set the size of the cropped canvas
-  croppedCanvas.width = pixelCrop.width
-  croppedCanvas.height = pixelCrop.height
+  croppedCanvas.width = finalWidth
+  croppedCanvas.height = finalHeight
 
   // Draw the cropped image onto the new canvas
   croppedCtx.drawImage(
@@ -85,8 +90,8 @@ export default async function getCroppedImg(
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    finalWidth,
+    finalHeight
   )
 
   // As a blob
